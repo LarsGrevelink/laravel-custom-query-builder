@@ -1,0 +1,37 @@
+<?php
+
+namespace DummyNamespace;
+
+use LGrevelink\CustomQueryBuilder\Database\Eloquent\CustomQueryBuilder;
+
+/**
+ * Generated via the artisan make:query-builder command.
+ */
+class DummyClass extends CustomQueryBuilder
+{
+    /**
+     * Sample method showing a singular filter. Filtering on a single value for
+     * my_column.
+     *
+     * @param string $myColumn
+     *
+     * @return $this
+     */
+    public function filterOnMyColumn(string $myColumn)
+    {
+        return $this->where('my_column', $myColumn);
+    }
+
+    /**
+     * Sample method showing a plural filter. Filtering on a multiple values
+     * for my_column.
+     *
+     * @param array $myColumns
+     *
+     * @return $this
+     */
+    public function filterOnMyColumns(array $myColumns)
+    {
+        return $this->whereIn('my_column', $myColumns);
+    }
+}
