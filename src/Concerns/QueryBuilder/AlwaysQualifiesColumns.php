@@ -2,6 +2,8 @@
 
 namespace LGrevelink\CustomQueryBuilder\Concerns\QueryBuilder;
 
+use Illuminate\Support\Arr;
+
 trait AlwaysQualifiesColumns
 {
     /**
