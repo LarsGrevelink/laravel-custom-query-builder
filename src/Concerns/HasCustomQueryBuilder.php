@@ -22,7 +22,7 @@ trait HasCustomQueryBuilder
      *
      * @return $this
      */
-    public function setQueryBuilder(string $className)
+    public function useQueryBuilder(string $className)
     {
         $this->queryBuilder = $className;
 

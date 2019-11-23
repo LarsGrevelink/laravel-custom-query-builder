@@ -18,7 +18,7 @@ abstract class CustomQueryBuilder extends Builder
      *
      * @var string
      */
-    protected const FORMAT_FILTER_METHOD = 'filterOn%s';
+    protected $filterMethodFormat = 'filterOn%s';
 
     /**
      * Apply a set of filters to the query builder.
@@ -60,7 +60,7 @@ abstract class CustomQueryBuilder extends Builder
             $studlyFilter = Str::pluralStudly($studlyFilter);
         }
 
-        return sprintf(static::FORMAT_FILTER_METHOD, $studlyFilter);
+        return sprintf($this->filterMethodFormat, $studlyFilter);
     }
 
     /**
@@ -79,7 +79,7 @@ abstract class CustomQueryBuilder extends Builder
     {
         $baseQueryBuilder = $this->getQuery();
 
-        $join = Arr::first($baseQueryBuilder->joins ?? [], function (JoinClause $join) use ($table) {
+        $join = Arr::first($baseQueryBuilder->joins ?? [], static function (JoinClause $join) use ($table) {
             return $join->table === $table;
         });
 
