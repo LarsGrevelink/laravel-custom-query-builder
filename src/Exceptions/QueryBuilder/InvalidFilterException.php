@@ -2,7 +2,7 @@
 
 namespace LGrevelink\CustomQueryBuilder\Exceptions\QueryBuilder;
 
-use App\Exceptions\QueryBuilderException;
+use LGrevelink\CustomQueryBuilder\Exceptions\QueryBuilderException;
 
 class InvalidFilterException extends QueryBuilderException
 {
