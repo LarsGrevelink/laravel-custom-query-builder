@@ -9,7 +9,7 @@ use Illuminate\Support\Str;
 use LGrevelink\CustomQueryBuilder\Concerns\QueryBuilder\AlwaysQualifiesColumns;
 use LGrevelink\CustomQueryBuilder\Exceptions\QueryBuilder\InvalidFilterException;
 
-abstract class CustomQueryBuilder extends Builder
+class CustomQueryBuilder extends Builder
 {
     use AlwaysQualifiesColumns;
 
@@ -45,6 +45,33 @@ abstract class CustomQueryBuilder extends Builder
     }
 
     /**
+     * Add a join clause only once to the base query. Simple checking is done on the table name.
+     *
+     * @param string $table
+     * @param string $first
+     * @param string|null $operator
+     * @param string|null $second
+     * @param string $type
+     * @param bool $where
+     *
+     * @return $this
+     */
+    public function joinOnce($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
+    {
+        $baseQueryBuilder = $this->getQuery();
+
+        $join = Arr::first($baseQueryBuilder->joins ?? [], static function (JoinClause $join) use ($table) {
+            return $join->table === $table;
+        });
+
+        if (!$join) {
+            $baseQueryBuilder->join($table, $first, $operator, $second, $type, $where);
+        }
+
+        return $this;
+    }
+
+    /**
      * Composes a filter name based on the set format.
      *
      * @param string $filter
@@ -61,32 +88,5 @@ abstract class CustomQueryBuilder extends Builder
         }
 
         return sprintf($this->filterMethodFormat, $studlyFilter);
-    }
-
-    /**
-     * Add a join clause only once to the base query. Simple checking is done on the table name.
-     *
-     * @param string $table
-     * @param string $first
-     * @param string|null $operator
-     * @param string|null $second
-     * @param string $type
-     * @param bool $where
-     *
-     * @return $this
-     */
-    protected function joinOnce($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
-    {
-        $baseQueryBuilder = $this->getQuery();
-
-        $join = Arr::first($baseQueryBuilder->joins ?? [], static function (JoinClause $join) use ($table) {
-            return $join->table === $table;
-        });
-
-        if (!$join) {
-            $baseQueryBuilder->join($table, $first, $operator, $second, $type, $where);
-        }
-
-        return $this;
     }
 }

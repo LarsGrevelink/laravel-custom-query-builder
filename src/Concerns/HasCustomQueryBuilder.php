@@ -4,6 +4,7 @@ namespace LGrevelink\CustomQueryBuilder\Concerns;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\Builder as QueryBuilder;
+use LGrevelink\CustomQueryBuilder\Database\Eloquent\CustomQueryBuilder;
 
 trait HasCustomQueryBuilder
 {
@@ -12,7 +13,7 @@ trait HasCustomQueryBuilder
      *
      * @var string
      */
-    protected $queryBuilder = Builder::class;
+    protected $queryBuilder = CustomQueryBuilder::class;
 
     /**
      * Sets the new query builder class which will be used in future
