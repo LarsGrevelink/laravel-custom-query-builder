@@ -9,11 +9,11 @@
     ],
     "require": {
         "php": ">=7.1",
-        "illuminate/console": "^5.7|^6.0",
-        "illuminate/support": "^5.7|^6.0"
+        "illuminate/console": ">=5.7",
+        "illuminate/support": ">=5.7"
     },
     "require-dev": {
-        "laravel/framework": "^5.7|^6.0",
+        "laravel/framework": ">=5.7",
         "phpunit/phpunit": "^7.0"
     },
     "autoload": {
