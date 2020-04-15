@@ -7,8 +7,11 @@ use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use LGrevelink\CustomQueryBuilder\Concerns\QueryBuilder\AlwaysQualifiesColumns;
-use LGrevelink\CustomQueryBuilder\Exceptions\QueryBuilder\InvalidFilterException;
 
+/**
+ * @see \Illuminate\Database\Eloquent\Builder
+ * @see \Illuminate\Database\Query\Builder
+ */
 class CustomQueryBuilder extends Builder
 {
     use AlwaysQualifiesColumns;
@@ -18,30 +21,94 @@ class CustomQueryBuilder extends Builder
      *
      * @var string
      */
-    protected $filterMethodFormat = 'filterOn%s';
+    protected $customFilterFormat = 'filterOn%s';
 
     /**
-     * Apply a set of filters to the query builder.
+     * Query builder sorting method format.
+     *
+     * @var string
+     */
+    protected $customSortingFormat = 'sortBy%s';
+
+    /**
+     * Default sorting when no direction is explicitly given.
+     *
+     * @var string
+     */
+    protected $defaultSortingDirection = 'asc';
+
+    /**
+     * Apply a set of filter clauses to the query.
      *
      * @param array $filters
-     *
-     * @throws InvalidFilterException
      *
      * @return $this
      */
     public function applyFilters(array $filters)
     {
         foreach ($filters as $filter => $value) {
-            $filterName = $this->composeFilterName($filter, is_array($value));
+            $customFilter = $this->composeFilterName($filter, is_array($value));
 
-            if (!method_exists($this, $filterName)) {
-                throw new InvalidFilterException('Invalid filter for query builder');
+            if (method_exists($this, $customFilter)) {
+                $this->$customFilter($value);
+            } else {
+                $this->applyFilterDirectly($filter, $value);
             }
-
-            $this->$filterName($value);
         }
 
         return $this;
+    }
+
+    /**
+     * Applies a single filter clause to the query based on the value type.
+     *
+     * @param string $filter
+     * @param mixed $value
+     */
+    protected function applyFilterDirectly(string $filter, $value)
+    {
+        if (is_array($value)) {
+            $this->whereIn($filter, $value);
+        } else {
+            $this->where($filter, $value);
+        }
+    }
+
+    /**
+     * Apply a set of sorting clauses to the query.
+     *
+     * @param array $sorts
+     *
+     * @return $this
+     */
+    public function applySorting(array $sorts)
+    {
+        foreach ($sorts as $sortBy => $direction) {
+            if (is_numeric($sortBy)) {
+                $this->applySortBy($direction);
+            } else {
+                $this->applySortBy($sortBy, $direction);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * Applies a single sorting clause to the query.
+     *
+     * @param string $sortBy
+     * @param string $direction
+     */
+    protected function applySortBy(string $sortBy, string $direction = 'asc')
+    {
+        $customSorting = $this->composeSortName($sortBy);
+
+        if (method_exists($this, $customSorting)) {
+            $this->$customSorting($direction);
+        } else {
+            $this->orderBy($sortBy, $direction);
+        }
     }
 
     /**
@@ -72,7 +139,7 @@ class CustomQueryBuilder extends Builder
     }
 
     /**
-     * Composes a filter name based on the set format.
+     * Composes a custom filter function name based on the set format.
      *
      * @param string $filter
      * @param bool $plural
@@ -81,12 +148,37 @@ class CustomQueryBuilder extends Builder
      */
     protected function composeFilterName(string $filter, bool $plural = false)
     {
-        $studlyFilter = Str::studly($filter);
+        return sprintf($this->customFilterFormat, $this->getStudlyName($filter, $plural));
+    }
+
+    /**
+     * Composes a custom sort function name based on the set format.
+     *
+     * @param string $sortBy
+     *
+     * @return string
+     */
+    protected function composeSortName(string $sortBy)
+    {
+        return sprintf($this->customSortingFormat, $this->getStudlyName($sortBy));
+    }
+
+    /**
+     * Composes a studly (pluralised) version of the given name.
+     *
+     * @param string $name
+     * @param bool $plural
+     *
+     * @return string
+     */
+    protected function getStudlyName(string $name, bool $plural = false)
+    {
+        $studlyName = Str::studly($name);
 
         if ($plural) {
-            $studlyFilter = Str::pluralStudly($studlyFilter);
+            return Str::pluralStudly($studlyName);
         }
 
-        return sprintf($this->filterMethodFormat, $studlyFilter);
+        return $studlyName;
     }
 }
