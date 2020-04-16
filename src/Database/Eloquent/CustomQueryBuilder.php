@@ -47,31 +47,52 @@ class CustomQueryBuilder extends Builder
     public function applyFilters(array $filters)
     {
         foreach ($filters as $filter => $value) {
-            $customFilter = $this->composeFilterName($filter, is_array($value));
-
-            if (method_exists($this, $customFilter)) {
-                $this->$customFilter($value);
-            } else {
-                $this->applyFilterDirectly($filter, $value);
-            }
+            $this->applyFilter($filter, $value);
         }
 
         return $this;
     }
 
     /**
-     * Applies a single filter clause to the query based on the value type.
+     * Apply a set of filter clauses to the query.
      *
      * @param string $filter
      * @param mixed $value
+     *
+     * @return $this
      */
-    protected function applyFilterDirectly(string $filter, $value)
+    public function applyFilter(string $filter, $value)
     {
-        if (is_array($value)) {
-            $this->whereIn($filter, $value);
+        $customFilter = $this->composeFilterName($filter, is_array($value));
+
+        if (method_exists($this, $customFilter)) {
+            $this->$customFilter($value);
         } else {
-            $this->where($filter, $value);
+            $this->applyDefaultFilter($filter, $value);
         }
+
+        return $this;
+    }
+
+    /**
+     * Applies default filter behaviour on non-custom filters.
+     *
+     * @param string $column
+     * @param mixed $value
+     *
+     * @return $this
+     */
+    protected function applyDefaultFilter(string $column, $value)
+    {
+        $column = $this->qualifyColumn($column);
+
+        if (is_array($value)) {
+            $this->query->whereIn($column, $value);
+        } else {
+            $this->where($column, $value);
+        }
+
+        return $this;
     }
 
     /**
@@ -81,13 +102,13 @@ class CustomQueryBuilder extends Builder
      *
      * @return $this
      */
-    public function applySorting(array $sorts)
+    public function applySortings(array $sorts)
     {
         foreach ($sorts as $sortBy => $direction) {
             if (is_numeric($sortBy)) {
-                $this->applySortBy($direction);
+                $this->applySorting($direction, $this->defaultSortingDirection);
             } else {
-                $this->applySortBy($sortBy, $direction);
+                $this->applySorting($sortBy, $direction);
             }
         }
 
@@ -99,16 +120,20 @@ class CustomQueryBuilder extends Builder
      *
      * @param string $sortBy
      * @param string $direction
+     *
+     * @return $this
      */
-    protected function applySortBy(string $sortBy, string $direction = 'asc')
+    public function applySorting(string $sortBy, string $direction)
     {
         $customSorting = $this->composeSortName($sortBy);
 
         if (method_exists($this, $customSorting)) {
             $this->$customSorting($direction);
         } else {
-            $this->orderBy($sortBy, $direction);
+            $this->orderBy($this->qualifyColumn($sortBy), $direction);
         }
+
+        return $this;
     }
 
     /**
@@ -125,14 +150,12 @@ class CustomQueryBuilder extends Builder
      */
     public function joinOnce($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
     {
-        $baseQueryBuilder = $this->getQuery();
-
-        $join = Arr::first($baseQueryBuilder->joins ?? [], static function (JoinClause $join) use ($table) {
+        $join = Arr::first($this->query->joins ?? [], static function (JoinClause $join) use ($table) {
             return $join->table === $table;
         });
 
         if (!$join) {
-            $baseQueryBuilder->join($table, $first, $operator, $second, $type, $where);
+            $this->query->join($table, $first, $operator, $second, $type, $where);
         }
 
         return $this;
