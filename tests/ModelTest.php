@@ -21,7 +21,7 @@ class ModelTest extends TestCase
 
     public function testSingleFilter()
     {
-        $result = $this->builder->filterOnSomeId(1)->get();
+        $result = $this->builder->filterOnId(1)->get();
 
         $this->assertSame(1, $result->count());
         $this->assertSame($result->first()->id, 1);
@@ -29,7 +29,7 @@ class ModelTest extends TestCase
 
     public function testMultiFilter()
     {
-        $result = $this->builder->filterOnOtherIds([1, 2, 3, 999])->get();
+        $result = $this->builder->filterOnTitles(['Title 1', 'Title 2', 'Title 3', 'Title 999'])->get();
 
         $this->assertSame(3, $result->count());
 
@@ -40,7 +40,7 @@ class ModelTest extends TestCase
 
     public function testCombiFilter()
     {
-        $result = $this->builder->filterOnSomeId(2)->filterOnOtherIds([1, 2, 3, 999])->get();
+        $result = $this->builder->filterOnId(2)->filterOnTitles(['Title 1', 'Title 2', 'Title 3', 'Title 999'])->get();
 
         $this->assertSame(1, $result->count());
         $this->assertSame($result->first()->id, 2);

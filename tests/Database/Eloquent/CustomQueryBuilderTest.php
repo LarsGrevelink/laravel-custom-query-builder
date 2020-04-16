@@ -2,8 +2,6 @@
 
 namespace Tests\Database\Eloquent;
 
-use Illuminate\Database\Query\Builder;
-use PHPUnit\Framework\MockObject\MockObject;
 use Tests\Mocks\CustomQueryBuilders\CustomQueryBuilderMock;
 use Tests\Mocks\Models\CustomModelMock;
 use Tests\TestCase;
@@ -25,22 +23,91 @@ class CustomQueryBuilderTest extends TestCase
 
     public function testApplyFilters()
     {
-        /** @var CustomQueryBuilderMock|MockObject */
-        $builder = $this->getMockBuilder(CustomQueryBuilderMock::class)->setConstructorArgs([
-            $this->getMockForAbstractClass(Builder::class, [], '', false),
-        ])->setMethods(['filterOnCustomFilter', 'filterOnCustomOtherFilters', 'where', 'whereIn'])->getMockForAbstractClass();
-
-        $builder->expects($this->once())->method('filterOnCustomFilter')->willReturnSelf();
-        $builder->expects($this->once())->method('filterOnCustomOtherFilters')->willReturnSelf();
-        $builder->expects($this->once())->method('where')->with('simple_filter', 'abcdefg');
-        $builder->expects($this->once())->method('whereIn')->with('simple_other_filter', ['abcdefg']);
-
-        $builder->applyFilters([
-            'custom_filter' => 12345,
-            'custom_other_filter' => [12345, 54321],
-            'simple_filter' => 'abcdefg',
-            'simple_other_filter' => ['abcdefg'],
+        $this->builder->applyFilters([
+            'some_column' => 'foo',
+            'id' => 2,
+            'some_other_column' => ['foo', 'bar'],
+            'title' => ['Title 1', 'Title 2'],
         ]);
+
+        // Verify single simple filter
+        $where = $this->builder->getQuery()->wheres[0];
+
+        $this->assertSame('Basic', $where['type']);
+        $this->assertSame('custom_models.some_column', $where['column']);
+        $this->assertSame('=', $where['operator']);
+        $this->assertSame('foo', $where['value']);
+        $this->assertSame('and', $where['boolean']);
+
+        // Verify single complex filter
+        $where = $this->builder->getQuery()->wheres[1];
+
+        $this->assertSame('Basic', $where['type']);
+        $this->assertSame('id', $where['column']);
+        $this->assertSame('=', $where['operator']);
+        $this->assertSame(2, $where['value']);
+        $this->assertSame('and', $where['boolean']);
+
+        // Verify multi simple filter
+        $where = $this->builder->getQuery()->wheres[2];
+
+        $this->assertSame('In', $where['type']);
+        $this->assertSame('custom_models.some_other_column', $where['column']);
+        $this->assertSame(['foo', 'bar'], $where['values']);
+        $this->assertSame('and', $where['boolean']);
+
+        // Verify multi complex filter
+        $where = $this->builder->getQuery()->wheres[3];
+
+        $this->assertSame('In', $where['type']);
+        $this->assertSame('title', $where['column']);
+        $this->assertSame(['Title 1', 'Title 2'], $where['values']);
+        $this->assertSame('and', $where['boolean']);
+    }
+
+    public function testApplyFilter()
+    {
+        // Verify single simple filter
+        $this->builder->applyFilter('some_column', 'foo');
+
+        $where = $this->builder->getQuery()->wheres[0];
+
+        $this->assertSame('Basic', $where['type']);
+        $this->assertSame('custom_models.some_column', $where['column']);
+        $this->assertSame('=', $where['operator']);
+        $this->assertSame('foo', $where['value']);
+        $this->assertSame('and', $where['boolean']);
+
+        // Verify single complex filter
+        $this->builder->applyFilter('id', 2);
+
+        $where = $this->builder->getQuery()->wheres[1];
+
+        $this->assertSame('Basic', $where['type']);
+        $this->assertSame('id', $where['column']);
+        $this->assertSame('=', $where['operator']);
+        $this->assertSame(2, $where['value']);
+        $this->assertSame('and', $where['boolean']);
+
+        // Verify multi simple filter
+        $this->builder->applyFilter('some_other_column', ['foo', 'bar']);
+
+        $where = $this->builder->getQuery()->wheres[2];
+
+        $this->assertSame('In', $where['type']);
+        $this->assertSame('custom_models.some_other_column', $where['column']);
+        $this->assertSame(['foo', 'bar'], $where['values']);
+        $this->assertSame('and', $where['boolean']);
+
+        // Verify multi complex filter
+        $this->builder->applyFilter('title', ['Title 1', 'Title 2']);
+
+        $where = $this->builder->getQuery()->wheres[3];
+
+        $this->assertSame('In', $where['type']);
+        $this->assertSame('title', $where['column']);
+        $this->assertSame(['Title 1', 'Title 2'], $where['values']);
+        $this->assertSame('and', $where['boolean']);
     }
 
     public function testComposeFilterName()
@@ -62,7 +129,12 @@ class CustomQueryBuilderTest extends TestCase
 
     public function testJoinOnce()
     {
+        $this->assertNull($this->builder->getQuery()->joins);
+
         $this->builder->joinOnce('table', 'something', '=', 'else');
+
+        $this->assertSame(1, count($this->builder->getQuery()->joins));
+
         $this->builder->joinOnce('table', 'something', '=', 'else');
 
         $this->assertSame(1, count($this->builder->getQuery()->joins));

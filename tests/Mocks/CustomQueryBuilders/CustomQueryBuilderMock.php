@@ -6,14 +6,14 @@ use LGrevelink\CustomQueryBuilder\Database\Eloquent\CustomQueryBuilder;
 
 class CustomQueryBuilderMock extends CustomQueryBuilder
 {
-    public function filterOnSomeId(int $id)
+    public function filterOnId(int $id)
     {
         return $this->where('id', $id);
     }
 
-    public function filterOnOtherIds(array $ids)
+    public function filterOnTitles(array $titles)
     {
-        $this->query->whereIn('id', $ids);
+        $this->query->whereIn('title', $titles);
 
         return $this;
     }
