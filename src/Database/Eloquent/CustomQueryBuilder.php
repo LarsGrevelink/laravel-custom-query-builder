@@ -8,6 +8,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use LGrevelink\CustomQueryBuilder\Concerns\QueryBuilder\QualifiesWildcardColumns;
 use LGrevelink\CustomQueryBuilder\Exceptions\Builder\StrictFilterException;
+use LGrevelink\CustomQueryBuilder\Exceptions\Builder\StrictSortingException;
 
 /**
  * @see \Illuminate\Database\Eloquent\Builder
@@ -130,8 +131,10 @@ class CustomQueryBuilder extends Builder
 
         if (method_exists($this, $customSorting)) {
             $this->$customSorting($direction);
-        } else {
+        } elseif (config('querybuilder.mode') === 'auto') {
             $this->query->orderBy($sortBy, $direction);
+        } else {
+            throw new StrictSortingException('Unsupported sorting: ' . $customSorting);
         }
 
         return $this;
@@ -151,7 +154,7 @@ class CustomQueryBuilder extends Builder
      */
     public function joinOnce($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
     {
-        $join = Arr::first($this->query->joins ?? [], static function (JoinClause $join) use ($table) {
+        $join = Arr::first($this->query->joins ?? [], function (JoinClause $join) use ($table) {
             return $join->table === $table;
         });
 
