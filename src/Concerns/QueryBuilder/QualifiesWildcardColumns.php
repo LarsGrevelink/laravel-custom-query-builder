@@ -2,16 +2,14 @@
 
 namespace LGrevelink\CustomQueryBuilder\Concerns\QueryBuilder;
 
-use Illuminate\Support\Arr;
-
-trait AlwaysQualifiesColumns
+trait QualifiesWildcardColumns
 {
     /**
      * @inheritdoc
      */
     public function select($columns = ['*'])
     {
-        return parent::select($this->qualifyColumns($columns));
+        return parent::select($this->qualifyWildcardColumns($columns));
     }
 
     /**
@@ -19,7 +17,7 @@ trait AlwaysQualifiesColumns
      */
     public function find($id, $columns = ['*'])
     {
-        return parent::find($id, $this->qualifyColumns($columns));
+        return parent::find($id, $this->qualifyWildcardColumns($columns));
     }
 
     /**
@@ -27,15 +25,15 @@ trait AlwaysQualifiesColumns
      */
     public function first($columns = ['*'])
     {
-        return parent::first($this->qualifyColumns($columns));
+        return parent::first($this->qualifyWildcardColumns($columns));
     }
 
     /**
      * @inheritdoc
      */
-    public function getModels($columns = ['*'])
+    public function get($columns = ['*'])
     {
-        return parent::getModels($this->qualifyColumns($columns));
+        return parent::get($this->qualifyWildcardColumns($columns));
     }
 
     /**
@@ -43,7 +41,7 @@ trait AlwaysQualifiesColumns
      */
     public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
     {
-        return parent::paginate($perPage, $this->qualifyColumns($columns), $pageName, $page);
+        return parent::paginate($perPage, $this->qualifyWildcardColumns($columns), $pageName, $page);
     }
 
     /**
@@ -51,7 +49,7 @@ trait AlwaysQualifiesColumns
      */
     public function simplePaginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
     {
-        return parent::simplePaginate($perPage, $this->qualifyColumns($columns), $pageName, $page);
+        return parent::simplePaginate($perPage, $this->qualifyWildcardColumns($columns), $pageName, $page);
     }
 
     /**
@@ -61,10 +59,14 @@ trait AlwaysQualifiesColumns
      *
      * @return array
      */
-    public function qualifyColumns($columns)
+    public function qualifyWildcardColumns($columns)
     {
         return array_map(function ($column) {
-            return $this->qualifyColumn($column);
-        }, Arr::wrap($columns));
+            if ($column === '*') {
+                return $this->qualifyColumn($column);
+            }
+
+            return $column;
+        }, is_array($columns) ? $columns : func_get_args());
     }
 }

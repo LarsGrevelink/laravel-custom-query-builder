@@ -6,7 +6,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Query\JoinClause;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
-use LGrevelink\CustomQueryBuilder\Concerns\QueryBuilder\AlwaysQualifiesColumns;
+use LGrevelink\CustomQueryBuilder\Concerns\QueryBuilder\QualifiesWildcardColumns;
+use LGrevelink\CustomQueryBuilder\Exceptions\Builder\StrictFilterException;
 
 /**
  * @see \Illuminate\Database\Eloquent\Builder
@@ -14,7 +15,7 @@ use LGrevelink\CustomQueryBuilder\Concerns\QueryBuilder\AlwaysQualifiesColumns;
  */
 class CustomQueryBuilder extends Builder
 {
-    use AlwaysQualifiesColumns;
+    use QualifiesWildcardColumns;
 
     /**
      * Query builder filter method format.
@@ -86,8 +87,6 @@ class CustomQueryBuilder extends Builder
      */
     protected function applyDefaultFilter(string $column, $value)
     {
-        $column = $this->qualifyColumn($column);
-
         if (is_array($value)) {
             $this->query->whereIn($column, $value);
         } else {
@@ -132,7 +131,7 @@ class CustomQueryBuilder extends Builder
         if (method_exists($this, $customSorting)) {
             $this->$customSorting($direction);
         } else {
-            $this->orderBy($this->qualifyColumn($sortBy), $direction);
+            $this->query->orderBy($sortBy, $direction);
         }
 
         return $this;

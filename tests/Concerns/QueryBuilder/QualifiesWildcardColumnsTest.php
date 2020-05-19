@@ -6,7 +6,7 @@ use Tests\Mocks\CustomQueryBuilders\CustomQueryBuilderMock;
 use Tests\Mocks\Models\CustomModelMock;
 use Tests\TestCase;
 
-class AlwaysQualifiesColumnsTest extends TestCase
+class QualifiesWildcardColumnsTest extends TestCase
 {
     /**
      * @var CustomQueryBuilderMock
@@ -20,15 +20,17 @@ class AlwaysQualifiesColumnsTest extends TestCase
         $this->builder = CustomModelMock::query();
     }
 
-    public function testQualifyColumns()
+    public function testQualifyWildcardColumns()
     {
         // This bubbles through to the QueryBuilder itself
-        $qualifiedColumns = $this->builder->qualifyColumns([
+        $qualifiedColumns = $this->builder->qualifyWildcardColumns([
             'foo.bar',
             'bar',
+            '*',
         ]);
 
         $this->assertSame('foo.bar', $qualifiedColumns[0]);
-        $this->assertSame('custom_models.bar', $qualifiedColumns[1]);
+        $this->assertSame('bar', $qualifiedColumns[1]);
+        $this->assertSame('custom_models.*', $qualifiedColumns[2]);
     }
 }
