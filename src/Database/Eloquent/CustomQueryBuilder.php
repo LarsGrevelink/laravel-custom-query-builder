@@ -67,8 +67,10 @@ class CustomQueryBuilder extends Builder
 
         if (method_exists($this, $customFilter)) {
             $this->$customFilter($value);
-        } else {
+        } elseif (config('querybuilder.mode') === 'auto') {
             $this->applyDefaultFilter($filter, $value);
+        } else {
+            throw new StrictFilterException('Unsupported filter: ' . $customFilter);
         }
 
         return $this;

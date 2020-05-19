@@ -12,10 +12,22 @@ class ServiceProvider extends BaseServiceProvider
      */
     public function boot()
     {
+        $this->publishes([
+            __DIR__ . '/../config/querybuilder.php' => config_path('querybuilder.php'),
+        ]);
+
         // Only register the commands when running from the console.
         if ($this->app->runningInConsole()) {
             $this->addCommands();
         }
+    }
+
+    /**
+     * Register any application services.
+     */
+    public function register()
+    {
+        $this->mergeConfigFrom(__DIR__ . '/../config/querybuilder.php', 'querybuilder');
     }
 
     /**
