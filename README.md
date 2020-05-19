@@ -48,7 +48,7 @@ $app->configure('querybuilder');
 
 Models use Eloquent's builder as a default when running operations from your model. This package allows you to override this default behaviour with a custom query builder which can be hosted in your project.
 
-### Create a new query builder (generator)
+#### Create a new query builder (generator)
 
 The package includes an artisan make command which configures an example builder at the given location. Simply run the following and you should have the builder;
 
@@ -56,7 +56,7 @@ The package includes an artisan make command which configures an example builder
 php artisan make:query-builder MyQueryBuilder
 ```
 
-### Assigning a query builder
+#### Assigning a query builder
 
 After creating the query builder we need to assign it to the model. The model needs to have the `HasCustomQueryBuilder` concern applied to it. This can be done by extending the `LGrevelink\CustomQueryBuilder\Model` instead of the Eloquent's model or adding the trait directly to the class. This only initiates a connection to the `CustomQueryBuilder`. To use your own you have to set it in the model;
 
@@ -69,7 +69,7 @@ class SomeModel extends Model
 }
 ```
 
-### Using the query builder
+#### Using the query builder
 
 The default naming structures for filters and sorting are `filterOn%s` and `sortBy%s` where the placeholder will be replaced by a **singular or plural** version of the filter depending on the filter value. In case it's an array it attempts the plural version. Any other value will make use of the singular version. Below are some examples where each of the sets acts the same.
 
@@ -100,13 +100,13 @@ $builder->applySorting([
 ]); // Calls both sortByCategory and sortByTitle
 ```
 
-### Strict exceptions
+#### Strict exceptions
 
 In case a filter does not exist an exception will be thrown. There is a fallback for these cases which automatically applies a `where` or `whereIn` for unknown filters and applies an `orderBy` for unknown sortings. By default, the query builder's mode is set to `strict` and this behaviour is prevented. You can change this by overriding the `querybuilder.mode` config value and set it to `auto`. **Be aware that this could have side-effects if the input is not validated properly.**
 
 ## Utilities
 
-### joinOnce
+#### joinOnce
 
 The `joinOnce` method can be used to join tables but prevent duplicates. It makes use of the `\Illuminate\Database\Query\Builder`'s `join` method does a basic table validation before adding the join to the query. This way multiple joins on the same table can be prevented.
 
@@ -130,6 +130,6 @@ class ProductQueryBuilder extends CustomQueryBuilder
 In this case when filtering on status as well as title the join will only be forged once instead of multiple times.
 
 
-### Wildcard column qualifying
+#### Wildcard column qualifying
 
 Using unqualified wildcards in select statements can have side-effects which are hard to find. When using joins, values of the original table can be overwritten by the joined tables when the column naming is the same. To prevent this behaviour we qualify the unqualified wildcards. In case the overwriting is the behaviour you seek, we suggest to specifically add the columns you want to the select statement. Instead of making it a side effect, it should be a deliberate choice the developer is aware of.
