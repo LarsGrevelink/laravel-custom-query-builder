@@ -5,7 +5,7 @@
 [![Latest Stable Version](https://poser.pugx.org/lgrevelink/laravel-custom-query-builder/v/stable.svg)](https://packagist.org/packages/lgrevelink/laravel-custom-query-builder)
 [![License](https://poser.pugx.org/lgrevelink/laravel-custom-query-builder/license.svg)](https://github.com/larsgrevelink/laravel-custom-query-builder)
 
-A custom query builder which allows projects to use Eloquent's builder on an application level. Define joins, filters and sorting methods with proper IntelliSense through a thin abstraction layer. It's a different approach to Laravel's local scopes.
+A custom query builder which allows projects to use Eloquent's builder on an application level. Define joins, filters, sorting and scopes with proper IntelliSense through a thin abstraction layer.
 
 ## Installation
 
@@ -98,6 +98,19 @@ $builder->applySorting([
     'category' => 'asc',
     'title' => 'asc',
 ]); // Calls both sortByCategory and sortByTitle
+```
+
+#### Global scopes directly from the builder
+
+If you want to keep all database related data, including global scopes, in the query builder; you can! They are only added when the models dictate that they should be added but it keeps you from having to add these through the `Model->boot` functions.
+
+```php
+class MyQueryBuilder extends CustomQueryBuilder
+{
+    protected $globalScopes = [
+        MyScope::class,
+    ];
+}
 ```
 
 #### Strict exceptions

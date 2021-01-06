@@ -40,6 +40,13 @@ class CustomQueryBuilder extends Builder
     protected $defaultSortingDirection = 'asc';
 
     /**
+     * Default global scopes which are added when requested by the model.
+     *
+     * @var array
+     */
+    protected $globalScopes = [];
+
+    /**
      * Apply a set of filter clauses to the query.
      *
      * @param array $filters
@@ -160,6 +167,20 @@ class CustomQueryBuilder extends Builder
 
         if (!$join) {
             $this->query->join($table, $first, $operator, $second, $type, $where);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Registers the custom query builder's global scopes on the instance.
+     *
+     * @return $this
+     */
+    public function registerGlobalScopes()
+    {
+        foreach ($this->globalScopes as $scope) {
+            $this->withGlobalScope($scope, new $scope());
         }
 
         return $this;
