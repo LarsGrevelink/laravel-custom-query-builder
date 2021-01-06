@@ -2,8 +2,6 @@
 
 namespace LGrevelink\CustomQueryBuilder\Concerns;
 
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 use LGrevelink\CustomQueryBuilder\Database\Eloquent\CustomQueryBuilder;
 
 trait HasCustomQueryBuilder
@@ -31,14 +29,23 @@ trait HasCustomQueryBuilder
     }
 
     /**
-     * Create a new Eloquent query builder for the model.
-     *
-     * @param QueryBuilder $query
-     *
-     * @return Builder
+     * @inheritdoc
      */
     public function newEloquentBuilder($query)
     {
         return new $this->queryBuilder($query);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function registerGlobalScopes($builder)
+    {
+        // Trigger a builder's registerGlobalScopes when present
+        if (method_exists($builder, 'registerGlobalScopes')) {
+            $builder->registerGlobalScopes();
+        }
+
+        return parent::registerGlobalScopes($builder);
     }
 }
