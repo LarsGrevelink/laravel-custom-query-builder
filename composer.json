@@ -33,7 +33,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "LGrevelink\\CustomQueryBuilder\\CustomQueryBuilderServiceProvider"
+                "LGrevelink\\CustomQueryBuilder\\ServiceProvider"
             ]
         }
     }
