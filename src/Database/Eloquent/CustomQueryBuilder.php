@@ -148,6 +148,19 @@ class CustomQueryBuilder extends Builder
     }
 
     /**
+     * Checks whether a table is already joined.
+     *
+     * @param string $table
+     *
+     * @return bool
+     */
+    public function alreadyJoined($table) {
+        return (bool) Arr::first($this->query->joins ?? [], function (JoinClause $join) use ($table) {
+            return $join->table === $table;
+        });
+    }
+
+    /**
      * Add a join clause only once to the base query. Simple checking is done on the table name.
      *
      * @param string $table
@@ -161,11 +174,7 @@ class CustomQueryBuilder extends Builder
      */
     public function joinOnce($table, $first, $operator = null, $second = null, $type = 'inner', $where = false)
     {
-        $join = Arr::first($this->query->joins ?? [], function (JoinClause $join) use ($table) {
-            return $join->table === $table;
-        });
-
-        if (!$join) {
+        if (!$this->alreadyJoined($table)) {
             $this->query->join($table, $first, $operator, $second, $type, $where);
         }
 

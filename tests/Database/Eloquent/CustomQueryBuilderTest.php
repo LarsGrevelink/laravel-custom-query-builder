@@ -127,6 +127,17 @@ class CustomQueryBuilderTest extends TestCase
         $this->assertSame('OtherIds', TestUtil::invokeMethod($this->builder, 'getStudlyName', ['other_id', true]));
     }
 
+    public function testAlreadyJoined()
+    {
+        $this->assertNull($this->builder->getQuery()->joins);
+
+        $this->assertFalse($this->builder->alreadyJoined('table'));
+
+        $this->builder->joinOnce('table', 'something', '=', 'else');
+
+        $this->assertTrue($this->builder->alreadyJoined('table'));
+    }
+
     public function testJoinOnce()
     {
         $this->assertNull($this->builder->getQuery()->joins);
