@@ -39,17 +39,17 @@ trait QualifiesWildcardColumns
     /**
      * @inheritdoc
      */
-    public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
+    public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null, $total = null)
     {
-        return parent::paginate($perPage, $this->qualifyWildcardColumns($columns), $pageName, $page);
+        return parent::paginate($perPage, $this->qualifyWildcardColumns($columns), $pageName, $page, $total);
     }
 
     /**
      * @inheritdoc
      */
-    public function simplePaginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
+    public function simplePaginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null, $total = null)
     {
-        return parent::simplePaginate($perPage, $this->qualifyWildcardColumns($columns), $pageName, $page);
+        return parent::simplePaginate($perPage, $this->qualifyWildcardColumns($columns), $pageName, $page, $total);
     }
 
     /**
